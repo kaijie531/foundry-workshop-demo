@@ -1,0 +1,21 @@
+# CODEOWNERS
+# Code owners are automatically requested for review on matching PRs. Combined
+# with "Require review from Code Owners" in branch protection, this guarantees a
+# human owner approves changes — even when an agent authors the PR.
+#
+# Replace the placeholder team handles below with your real GitHub teams/users.
+
+# Fallback owner for everything.
+*                          @kaijieang_microsoft
+
+# DevOps / pipeline files — a platform/DevOps owner must approve.
+/.github/workflows/        @kaijieang_microsoft
+/.github/dependabot.yml    @kaijieang_microsoft
+/.github/agents/           @kaijieang_microsoft
+/.github/CODEOWNERS        @kaijieang_microsoft
+/.github/copilot-setup-steps.yml  @kaijieang_microsoft
+
+# Security / DevSecOps config — a security owner must approve.
+/.github/workflows/codeql.yml              @kaijieang_microsoft
+/.github/workflows/dependency-review.yml   @kaijieang_microsoft
+/SECURITY.md                               @kaijieang_microsoft

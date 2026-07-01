@@ -1,0 +1,24 @@
+# =============================================================================
+# Copilot coding agent — environment bootstrap
+# -----------------------------------------------------------------------------
+# When you assign an issue to @copilot, the coding agent spins up an isolated
+# environment on GitHub Actions. These steps run FIRST, so the agent starts from
+# a repo that already builds and tests — it can then validate its own changes
+# before opening a pull request. Think of this as "onboarding a new teammate."
+# =============================================================================
+steps:
+  # Set up the Python toolchain the agent will use.
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: '3.12'
+
+  # Install runtime + dev dependencies so the repo is ready to build and test.
+  - name: Install dependencies
+    run: |
+      python -m pip install --upgrade pip
+      pip install -r requirements-dev.txt
+
+  # Confirm the test suite is green before the agent starts making changes.
+  - name: Verify tests pass
+    run: pytest --junitxml=test-results.xml

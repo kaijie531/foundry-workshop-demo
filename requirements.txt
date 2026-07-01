@@ -1,0 +1,2 @@
+# Runtime dependencies (scanned by Dependency review + Dependabot).
+requests>=2.32.0

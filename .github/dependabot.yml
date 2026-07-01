@@ -1,0 +1,29 @@
+# =============================================================================
+# Automated dependency updates  (DevSecOps — keep dependencies patched)
+# owner: @security-reviewer
+# -----------------------------------------------------------------------------
+# Agent note: add one `package-ecosystem` block per manifest in the repo.
+# Uncomment the block(s) that match your stack; delete the rest.
+# =============================================================================
+version: 2
+updates:
+  # Keep the GitHub Actions used by the pipeline up to date (every repo).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # PLACEHOLDER — application dependencies. Uncomment the one(s) you use.
+  # - package-ecosystem: "npm"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  # - package-ecosystem: "nuget"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  # - package-ecosystem: "pip"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  # - package-ecosystem: "maven"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }

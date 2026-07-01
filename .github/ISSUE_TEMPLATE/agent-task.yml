@@ -1,0 +1,48 @@
+name: "🤖 DevOps agent task"
+description: "Create a well-scoped task to assign to a Copilot DevOps agent."
+title: "[agent] <short outcome>"
+labels: ["agent-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this in like you're briefing a teammate. Then assign the issue to
+        **@copilot** and pick the right agent from the Agents panel. Good context
+        here dramatically improves the resulting pull request.
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Which agent should handle this?
+      options:
+        - pipeline-engineer (build)
+        - test-specialist (test)
+        - security-reviewer (security / DevSecOps)
+        - release-manager (release / deploy)
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected outcome ("done" looks like…)
+      description: What should be true when this is complete?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Background & context
+      description: Why this matters, related files, links, constraints.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checklist the PR must satisfy (e.g. "ci-success passes").
+  - type: checkboxes
+    id: guardrails
+    attributes:
+      label: Guardrails acknowledged
+      options:
+        - label: "Pull request only — no direct push to main"
+          required: true
+        - label: "Stay within the selected agent's file scope"
+          required: true
