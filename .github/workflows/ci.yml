@@ -1,0 +1,173 @@
+# =============================================================================
+# CI/CD Pipeline — Agentic DevOps
+# -----------------------------------------------------------------------------
+# This pipeline is designed to be *operated by a crew of automation agents*
+# (GitHub Copilot custom agents) as well as by humans:
+#
+#   @pipeline-engineer  → owns build + test wiring in this file
+#   @test-specialist    → owns the test stage / coverage gates
+#   @security-reviewer  → owns the security-validation stage (DevSecOps)
+#   @release-manager    → owns deploy gates (added later, out of scope here)
+#
+# Each agent proposes changes to this file *via pull requests only* — no agent
+# ever pushes to a protected branch, and no CI/CD runs on an agent PR until a
+# human approves it. Each stage below is intentionally isolated so one agent can
+# reason about and modify its stage without disturbing the others.
+#
+# Security posture (why the permissions look the way they do):
+#   * The default GITHUB_TOKEN is read-only (see top-level `permissions:`).
+#   * A job elevates to write scope ONLY where it truly needs it, at job level.
+#   * Third-party actions are pinned by version tag; pin to a full commit SHA
+#     for production hardening (see docs/agentic-devops-setup.md).
+# =============================================================================
+
+name: CI
+
+# --- Triggers ---------------------------------------------------------------
+# Agent note: run on every pull request (pre-merge validation) and on every
+# push to main (post-merge verification / deploy gate).
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+# --- Least-privilege default token -----------------------------------------
+# Agent note: start read-only. Individual jobs request more only as needed.
+permissions:
+  contents: read
+
+# --- Avoid redundant runs ---------------------------------------------------
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # STAGE 1 — BUILD  (owner: @pipeline-engineer)
+  # ===========================================================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------------
+      # PLACEHOLDER — replace with your stack's build command.
+      #   Node.js : npm ci && npm run build
+      #   .NET    : dotnet restore && dotnet build --configuration Release
+      #   Python  : pip install -r requirements.txt && python -m build
+      #   Java    : mvn -B package --file pom.xml
+      # DevOps agent: edit ONLY this step to wire in the real build.
+      # ---------------------------------------------------------------------
+      - name: Build (placeholder)
+        run: |
+          echo "🔧 [build] Replace with the project's real build command."
+          echo "🔧 [build] Example: npm ci && npm run build"
+
+      # Persist build output so later jobs can reuse it (optional).
+      - name: Upload build artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            dist/
+            build/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ===========================================================================
+  # STAGE 2 — TEST  (owner: @test-specialist)
+  # ===========================================================================
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build          # run only after a successful build
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------------
+      # PLACEHOLDER — replace with your stack's test command.
+      #   Node.js : npm test -- --ci
+      #   .NET    : dotnet test --configuration Release --logger trx
+      #   Python  : pytest --junitxml=test-results.xml
+      #   Java    : mvn -B test
+      # ---------------------------------------------------------------------
+      - name: Run tests (placeholder)
+        run: |
+          echo "🧪 [test] Replace with the project's real test command."
+          echo "🧪 [test] Example: npm test -- --ci"
+
+      - name: Publish test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            **/test-results.xml
+            **/*.trx
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ===========================================================================
+  # STAGE 3 — SECURITY VALIDATION (DevSecOps)  (owner: @security-reviewer)
+  # ===========================================================================
+  # Kept separate so security gates evolve independently of build/test. Deep
+  # scans live in dedicated workflows (codeql.yml, dependency-review.yml) so they
+  # can run on their own triggers/schedule; this job is the fast in-line gate.
+  security-validation:
+    name: Security validation
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      security-events: write   # allow uploading SARIF results (when enabled)
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # --- Secret scanning placeholder -------------------------------------
+      # Plug in: gitleaks, trufflehog, or native GitHub secret scanning.
+      - name: Secret scan (placeholder)
+        run: |
+          echo "🔐 [security] PLUG IN a secret scanner here (e.g. gitleaks)."
+          echo "🔐 [security] See SECURITY.md → 'Secret scanning'."
+
+      # --- SAST / code scanning placeholder --------------------------------
+      # Real CodeQL analysis is wired up in .github/workflows/codeql.yml.
+      - name: Static analysis (SAST) (placeholder)
+        run: |
+          echo "🛡️ [security] SAST runs in codeql.yml. Add extra linters here."
+          echo "🛡️ [security] See SECURITY.md → 'Static analysis (SAST)'."
+
+      # --- Dependency / SCA placeholder ------------------------------------
+      # Real dependency review is wired up in dependency-review.yml + dependabot.
+      - name: Dependency check (placeholder)
+        run: |
+          echo "📦 [security] SCA runs in dependency-review.yml + dependabot.yml."
+          echo "📦 [security] See SECURITY.md → 'Dependency scanning (SCA)'."
+
+  # ===========================================================================
+  # GATE — all stages must pass (single, stable required status check)
+  # ===========================================================================
+  # Agent note: set THIS job ("CI success") as the required status check in
+  # branch protection. It gives ONE stable check name even as the jobs above
+  # change, so protection rules don't break every time an agent edits a stage.
+  ci-success:
+    name: CI success
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [ build, test, security-validation ]
+    steps:
+      - name: Verify all required stages passed
+        run: |
+          if [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.security-validation.result }}" != "success" ]; then
+            echo "❌ One or more required stages failed."
+            exit 1
+          fi
+          echo "✅ Build, test, and security validation all passed."

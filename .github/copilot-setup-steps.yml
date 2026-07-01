@@ -1,0 +1,22 @@
+# =============================================================================
+# Copilot coding agent — environment bootstrap
+# -----------------------------------------------------------------------------
+# When you assign an issue to @copilot, the coding agent spins up an isolated
+# environment on GitHub Actions. These steps run FIRST, so the agent starts from
+# a repo that already builds and tests — it can then validate its own changes
+# before opening a pull request. Think of this as "onboarding a new teammate."
+#
+# PLACEHOLDER — replace with your project's real bootstrap. Examples:
+#   Node.js : actions/setup-node + npm ci + npm run build + npm test
+#   .NET    : actions/setup-dotnet + dotnet restore/build/test
+#   Python  : actions/setup-python + pip install -r requirements.txt + pytest
+# =============================================================================
+steps:
+  - name: Install dependencies (placeholder)
+    run: echo "🔧 Replace with your install step, e.g. 'npm ci'."
+
+  - name: Build the project (placeholder)
+    run: echo "🔧 Replace with your build step, e.g. 'npm run build'."
+
+  - name: Verify tests pass (placeholder)
+    run: echo "🧪 Replace with your test step, e.g. 'npm test'."
