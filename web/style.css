@@ -93,6 +93,7 @@ button:hover { opacity: 0.9; }
 }
 
 .result .label { font-size: 26px; font-weight: 700; text-transform: capitalize; }
+.result .emoji { font-size: 52px; line-height: 1; margin-bottom: 10px; }
 .result .score { color: var(--gray); font-size: 14px; margin-top: 4px; }
 
 .result.positive .label { color: var(--pos); }
