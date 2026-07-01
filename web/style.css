@@ -1,0 +1,111 @@
+:root {
+  --bg: #0d0d12;
+  --card: #16161f;
+  --border: #2a2a38;
+  --purple: #6b5ce7;
+  --purple-light: #8b7fe8;
+  --white: #ffffff;
+  --gray: #a0a8b8;
+  --pos: #22c55e;
+  --neg: #ef4444;
+  --neu: #8b7fe8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.app { width: 100%; max-width: 560px; }
+
+header { text-align: center; margin-bottom: 28px; }
+
+.badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #432ec9, #6b5ce7);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 34px; font-weight: 700; }
+
+.subtitle { color: var(--purple-light); margin-top: 6px; font-size: 15px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 8px; }
+
+textarea {
+  width: 100%;
+  background: #0d0d12;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--white);
+  padding: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+textarea:focus { outline: none; border-color: var(--purple); }
+
+button {
+  margin-top: 14px;
+  width: 100%;
+  background: linear-gradient(90deg, #5c48ce, #8b7fe8);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+button:hover { opacity: 0.9; }
+
+.result {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #0d0d12;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.result .label { font-size: 26px; font-weight: 700; text-transform: capitalize; }
+.result .score { color: var(--gray); font-size: 14px; margin-top: 4px; }
+
+.result.positive .label { color: var(--pos); }
+.result.negative .label { color: var(--neg); }
+.result.neutral .label { color: var(--neu); }
+
+.hidden { display: none; }
+
+footer {
+  text-align: center;
+  margin-top: 22px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+footer a { color: var(--purple-light); text-decoration: none; }
