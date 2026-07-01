@@ -175,3 +175,20 @@ branch ruleset** (or classic **Branch protection rules**) targeting `main`.
 - Workflow tokens are **least-privilege** (`contents: read` by default).
 - Branch protection + CODEOWNERS + `ci-success` gate every change.
 - Secrets are referenced via `${{ secrets.* }}` — never committed.
+
+---
+
+## 10. Sample app (what the pipeline ships)
+
+A minimal **Python** app lives in `app/` with tests in `tests/`, so the pipeline
+runs real commands instead of placeholders:
+
+- `app/sentiment.py` — a dependency-free `analyze()` heuristic (offline, no
+  secrets) plus `fetch_remote_sentiment()`, the stub where a real **Microsoft
+  Foundry** model call plugs in later.
+- `requirements.txt` / `requirements-dev.txt` / `pyproject.toml` — the dependency
+  manifests that **Dependency review** and **Dependabot** read.
+- CI now does: **build** = `python -m compileall app`, **test** = `pytest`,
+  and **CodeQL** analyzes `python`.
+
+Grow this into the full Foundry-agent app over time; the pipeline stays the same.

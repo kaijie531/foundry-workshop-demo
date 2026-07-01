@@ -29,10 +29,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # PLACEHOLDER — set the languages CodeQL should analyze.
+        # Languages CodeQL should analyze. This demo ships a Python app.
         # Supported: c-cpp, csharp, go, java-kotlin, javascript-typescript,
         #            python, ruby, swift
-        language: [ javascript-typescript ]
+        language: [ python ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

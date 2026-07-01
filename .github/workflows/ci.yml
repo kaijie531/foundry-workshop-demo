@@ -53,18 +53,21 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # ---------------------------------------------------------------------
-      # PLACEHOLDER — replace with your stack's build command.
-      #   Node.js : npm ci && npm run build
-      #   .NET    : dotnet restore && dotnet build --configuration Release
-      #   Python  : pip install -r requirements.txt && python -m build
-      #   Java    : mvn -B package --file pom.xml
-      # DevOps agent: edit ONLY this step to wire in the real build.
-      # ---------------------------------------------------------------------
-      - name: Build (placeholder)
+      # Set up the Python toolchain for the build.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Install runtime dependencies declared in requirements.txt.
+      - name: Install dependencies
         run: |
-          echo "🔧 [build] Replace with the project's real build command."
-          echo "🔧 [build] Example: npm ci && npm run build"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # "Build" for an interpreted app = byte-compile to catch syntax errors early.
+      - name: Build (compile sources)
+        run: python -m compileall app
 
       # Persist build output so later jobs can reuse it (optional).
       - name: Upload build artifacts
@@ -89,17 +92,21 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # ---------------------------------------------------------------------
-      # PLACEHOLDER — replace with your stack's test command.
-      #   Node.js : npm test -- --ci
-      #   .NET    : dotnet test --configuration Release --logger trx
-      #   Python  : pytest --junitxml=test-results.xml
-      #   Java    : mvn -B test
-      # ---------------------------------------------------------------------
-      - name: Run tests (placeholder)
+      # Set up the Python toolchain for the test run.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Install runtime + dev (pytest) dependencies.
+      - name: Install dependencies
         run: |
-          echo "🧪 [test] Replace with the project's real test command."
-          echo "🧪 [test] Example: npm test -- --ci"
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # Run the unit tests and emit JUnit XML for the artifact upload below.
+      - name: Run tests
+        run: pytest --junitxml=test-results.xml
 
       - name: Publish test results
         if: ${{ always() }}
