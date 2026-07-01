@@ -33,21 +33,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Wait until the required `CI success` check has concluded (max ~7 min).
-      - name: Wait for CI to conclude
+      # Wait until every check EXCEPT this workflow's own jobs has concluded, so
+      # the agent reviews a complete picture (CodeQL etc. can finish after CI).
+      - name: Wait for all non-agent checks to conclude
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           for i in $(seq 1 42); do
-            status=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
-              --jq '[.check_runs[] | select(.name=="CI success")][0].status // "missing"')
-            echo "CI success status: $status"
-            if [ "$status" = "completed" ]; then break; fi
+            data=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs")
+            ci=$(echo "$data" | jq -r '[.check_runs[] | select(.name=="CI success")][0].status // "missing"')
+            pending=$(echo "$data" | jq '[.check_runs[] | select(.name!="Foundry agent review" and .name!="Human-approved merge") | select(.status!="completed")] | length')
+            echo "CI success=$ci, pending non-agent checks=$pending"
+            if [ "$ci" = "completed" ] && [ "$pending" = "0" ]; then break; fi
             sleep 10
           done
 
-      # Collect the check results into one line for the agent.
+      # Collect the check results (excluding this workflow's own jobs) for the agent.
       - name: Gather check results
         id: ctx
         env:
@@ -55,7 +57,7 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           checks=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
-            --jq '[.check_runs[] | "\(.name)=\(.conclusion // .status)"] | join(", ")')
+            --jq '[.check_runs[] | select(.name!="Foundry agent review" and .name!="Human-approved merge") | "\(.name)=\(.conclusion // .status)"] | join(", ")')
           echo "checks=$checks" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
