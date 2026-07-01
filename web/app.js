@@ -24,8 +24,9 @@ function render() {
     return;
   }
   const { label, score } = analyze(text);
+  const emoji = { positive: "😀", negative: "🙁", neutral: "😐" }[label];
   el.className = `result ${label}`;
-  el.innerHTML = `<div class="label">${label}</div><div class="score">score: ${score}</div>`;
+  el.innerHTML = `<div class="emoji">${emoji}</div><div class="label">${label}</div><div class="score">score: ${score}</div>`;
 }
 
 document.getElementById("analyze").addEventListener("click", render);
