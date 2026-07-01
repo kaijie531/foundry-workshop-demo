@@ -1,0 +1,119 @@
+# =============================================================================
+# Agent Review — a Foundry agent reviews each PR, then a human gates the merge.
+# -----------------------------------------------------------------------------
+# Flow (workflow-driven design):
+#   1. Wait for the CI pipeline's `CI success` gate to conclude.
+#   2. Call the Foundry `release-reviewer` agent with the PR + check results.
+#   3. Post the agent's APPROVE/HOLD review as a PR comment.
+#   4. Gate the merge behind the `production` environment (a human approves),
+#      and only merge if the agent recommended APPROVE.
+# Auth to Foundry uses a single secret (FOUNDRY_KEY); no OIDC needed.
+# =============================================================================
+name: Agent Review
+
+on:
+  pull_request:
+    branches: [ main ]
+
+# Least privilege by default; jobs elevate as needed.
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Foundry agent review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write   # to comment on the PR
+      checks: read
+    outputs:
+      recommendation: ${{ steps.parse.outputs.recommendation }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Wait until the required `CI success` check has concluded (max ~7 min).
+      - name: Wait for CI to conclude
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          for i in $(seq 1 42); do
+            status=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
+              --jq '[.check_runs[] | select(.name=="CI success")][0].status // "missing"')
+            echo "CI success status: $status"
+            if [ "$status" = "completed" ]; then break; fi
+            sleep 10
+          done
+
+      # Collect the check results into one line for the agent.
+      - name: Gather check results
+        id: ctx
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          checks=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
+            --jq '[.check_runs[] | "\(.name)=\(.conclusion // .status)"] | join(", ")')
+          echo "checks=$checks" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install the OpenAI client
+        run: pip install openai
+
+      # Ask the Foundry agent for a review + recommendation.
+      - name: Ask the Foundry agent
+        env:
+          FOUNDRY_BASE_URL: ${{ vars.FOUNDRY_BASE_URL }}
+          FOUNDRY_KEY: ${{ secrets.FOUNDRY_KEY }}
+          FOUNDRY_AGENT: ${{ vars.FOUNDRY_AGENT }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          CHECKS: ${{ steps.ctx.outputs.checks }}
+        run: |
+          python .github/scripts/agent_review.py | tee review.txt
+
+      # Extract APPROVE / HOLD for the merge gate condition.
+      - name: Parse recommendation
+        id: parse
+        run: |
+          if grep -qiE 'RECOMMENDATION:\s*APPROVE' review.txt; then
+            echo "recommendation=APPROVE" >> "$GITHUB_OUTPUT"
+          else
+            echo "recommendation=HOLD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post the review as a PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "### 🤖 Foundry \`release-reviewer\` says:"
+            echo ""
+            echo '```'
+            cat review.txt
+            echo '```'
+          } > comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file comment.md
+
+  merge:
+    name: Human-approved merge
+    needs: review
+    if: ${{ needs.review.outputs.recommendation == 'APPROVE' }}
+    runs-on: ubuntu-latest
+    environment: production   # required reviewers on this environment = the human gate
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge the PR (squash) after human approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" --squash
