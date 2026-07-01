@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foundry Workshop — Sentiment Analyzer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="badge">Foundry Workshop</div>
+      <h1>Sentiment Analyzer</h1>
+      <p class="subtitle">Shipped by an agentic DevOps pipeline.</p>
+    </header>
+
+    <section class="card">
+      <label for="input">Type some text</label>
+      <textarea id="input" rows="4" placeholder="e.g. This workshop is brilliant and I love it"></textarea>
+      <button id="analyze">Analyze</button>
+      <div id="result" class="result hidden"></div>
+    </section>
+
+    <footer>
+      <span id="version">v1</span> ·
+      <a href="https://github.com/kaijie531/foundry-workshop-demo" target="_blank" rel="noopener">source</a>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
