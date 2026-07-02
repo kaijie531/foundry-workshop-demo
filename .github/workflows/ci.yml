@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Set up the Python toolchain for the build.
       - name: Set up Python
@@ -90,7 +90,7 @@ jobs:
     needs: build          # run only after a successful build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Set up the Python toolchain for the test run.
       - name: Set up Python
@@ -134,7 +134,7 @@ jobs:
       security-events: write   # allow uploading SARIF results (when enabled)
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # --- Secret scanning placeholder -------------------------------------
       # Plug in: gitleaks, trufflehog, or native GitHub secret scanning.
