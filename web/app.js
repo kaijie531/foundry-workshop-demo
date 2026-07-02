@@ -2,7 +2,7 @@
 // Ship features by editing this file: a PR runs CI, the Foundry agent reviews
 // it, a human approves, it merges, and GitHub Pages redeploys the live site.
 
-const POSITIVE = ["good", "great", "love", "excellent", "amazing", "happy", "best", "brilliant", "fantastic"];
+const POSITIVE = ["good", "great", "love", "excellent", "amazing", "happy", "best", "brilliant", "fantastic", "fabulous"];
 const NEGATIVE = ["bad", "terrible", "hate", "awful", "worst", "sad", "poor"];
 
 function analyze(text) {
