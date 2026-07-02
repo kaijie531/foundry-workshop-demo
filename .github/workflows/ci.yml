@@ -55,7 +55,7 @@ jobs:
 
       # Set up the Python toolchain for the build.
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -94,7 +94,7 @@ jobs:
 
       # Set up the Python toolchain for the test run.
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
