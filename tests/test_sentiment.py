@@ -29,6 +29,12 @@ def test_awesome_text():
     assert result["score"] > 0
 
 
+def test_cool_text():
+    result = analyze("This workshop is cool")
+    assert result["label"] == "positive"
+    assert result["score"] > 0
+
+
 def test_negative_text():
     result = analyze("This is terrible and awful, the worst")
     assert result["label"] == "negative"

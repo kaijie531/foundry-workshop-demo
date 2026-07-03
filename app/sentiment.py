@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import requests  # runtime dependency, exercised by fetch_remote_sentiment
 
-_POSITIVE = {"good", "great", "love", "excellent", "amazing", "happy", "best", "brilliant", "fabulous", "fun", "awesome"}
+_POSITIVE = {"good", "great", "love", "excellent", "amazing", "happy", "best", "brilliant", "fabulous", "fun", "awesome", "cool"}
 _NEGATIVE = {"bad", "terrible", "hate", "awful", "worst", "sad", "poor"}
 
 
